@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: spcms-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: spcms
+      POSTGRES_PASSWORD: spcms
+      POSTGRES_DB: spcms
+    ports:
+      - '5432:5432'
+    volumes:
+      - spcms_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U spcms -d spcms']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spcms-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgresql://spcms:spcms@postgres:5432/spcms?schema=public
+    ports:
+      - '3000:3000'
+    profiles:
+      - full
+
+volumes:
+  spcms_pg_data:

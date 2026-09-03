@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Studio Patron — Prisma foundation
+//
+// CURRENT: generator + datasource only. No business models yet.
+//
+// FUTURE schema (separate phase) should follow:
+//   id        String    @id @default(uuid()) @db.Uuid
+//   createdAt DateTime  @default(now()) @db.Timestamptz(3)
+//   updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+//   deletedAt DateTime? @db.Timestamptz(3)   // when soft-delete is required
+//   createdBy String?   @db.Uuid
+//   updatedBy String?   @db.Uuid
+//
+// Use PostgreSQL-native types, foreign keys, unique constraints, and indexes.
+// Store all timestamps as timestamptz (UTC).
+// Never store money as Float. Use Decimal for monetary values.
+// Never store image binaries in PostgreSQL — store media metadata and URLs only.
+//
+// Do not auto-sync schema from the application.
+// Development:  npx prisma migrate dev
+// Production:   npx prisma migrate deploy
+// -----------------------------------------------------------------------------

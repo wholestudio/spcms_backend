@@ -1,0 +1,13 @@
+process.env.NODE_ENV = 'test';
+process.env.PORT = '3000';
+process.env.HOST = '127.0.0.1';
+process.env.LOG_LEVEL = 'silent';
+process.env.API_BASE_URL = 'http://localhost:3000';
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL || 'postgresql://spcms:spcms@localhost:5432/spcms?schema=public';
+process.env.JWT_SECRET = 'test-secret-must-be-at-least-32-chars-long';
+process.env.JWT_EXPIRES_IN = '15m';
+process.env.CORS_ORIGINS = 'http://localhost:3000,http://localhost:3001';
+process.env.SWAGGER_ENABLED = 'true';
+process.env.RATE_LIMIT_WINDOW_MS = '60000';
+process.env.RATE_LIMIT_MAX = '1000';
