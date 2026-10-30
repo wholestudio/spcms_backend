@@ -3,29 +3,177 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // -----------------------------------------------------------------------------
-// Studio Patron — Prisma foundation
-//
-// CURRENT: generator + datasource only. No business models yet.
-//
-// FUTURE schema (separate phase) should follow:
-//   id        String    @id @default(uuid()) @db.Uuid
-//   createdAt DateTime  @default(now()) @db.Timestamptz(3)
-//   updatedAt DateTime  @updatedAt @db.Timestamptz(3)
-//   deletedAt DateTime? @db.Timestamptz(3)   // when soft-delete is required
-//   createdBy String?   @db.Uuid
-//   updatedBy String?   @db.Uuid
+// Studio Patron — Prisma schema
 //
 // Use PostgreSQL-native types, foreign keys, unique constraints, and indexes.
 // Store all timestamps as timestamptz (UTC).
-// Never store money as Float. Use Decimal for monetary values.
 // Never store image binaries in PostgreSQL — store media metadata and URLs only.
 //
-// Do not auto-sync schema from the application.
 // Development:  npx prisma migrate dev
 // Production:   npx prisma migrate deploy
 // -----------------------------------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR // CMS staff: manage products, projects, blogs, media
+  CUSTOMER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique
+  passwordHash String? // null if the user signs in only via Google
+  firstName    String
+  lastName     String?
+  phone        String?    @unique
+  avatarUrl    String?
+  role         Role       @default(CUSTOMER)
+  status       UserStatus @default(PENDING_VERIFICATION)
+
+  emailVerifiedAt DateTime? @db.Timestamptz(3)
+  phoneVerifiedAt DateTime? @db.Timestamptz(3)
+  googleId        String?   @unique
+  lastLoginAt     DateTime? @db.Timestamptz(3)
+
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime? @db.Timestamptz(3)
+  passwordChangedAt   DateTime? @db.Timestamptz(3)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3) // soft delete, keeps order history intact
+
+  addresses           Address[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  emailVerifyTokens   EmailVerificationToken[]
+  media               Media[]
+  auditLogs           AuditLog[]
+
+  @@index([role, status])
+  @@map("users")
+}
+
+model Address {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label      String? // "Home", "Office"
+  fullName   String
+  phone      String
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String
+  country    String  @default("IN")
+  isDefault  Boolean @default(false)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model RefreshToken {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash    String    @unique // store a hash, never the raw token
+  familyId     String
+  replacedById String?
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime  @db.Timestamptz(3)
+  revokedAt    DateTime? @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @db.Uuid
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String?
+  entityId   String?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model PasswordResetToken {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model Media {
+  id           String   @id @default(uuid()) @db.Uuid
+  fileName     String
+  url          String
+  thumbnailUrl String?
+  publicId     String
+  altText      String?
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  folder       String?
+  entityType   String?
+  entityId     String?
+  createdBy    String?  @db.Uuid
+  uploader     User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([entityType, entityId])
+  @@index([createdBy])
+  @@map("media")
+}

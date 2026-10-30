@@ -16,7 +16,7 @@ The application is a **modular monolith**: one deployable Node.js process, code 
 | Database   | PostgreSQL via Prisma                                                        |
 | Docs       | OpenAPI 3 at `/api/docs`                                                     |
 | Validation | Zod + `validate()` middleware                                                |
-| Auth       | JWT helpers + `authenticate` / `authorize` / `requirePermission`             |
+| Auth       | JWT + httpOnly `spcms_session` cookie; `authenticate` / `authorize` / `requirePermission` |
 | Logging    | Pino + pino-http, request ID via `x-request-id`                              |
 | Tests      | Jest (`tests/unit`, `tests/integration`)                                     |
 
@@ -42,11 +42,12 @@ Rules:
 
 - Global prefix: `/api/v1`
 - Health: `GET /api/v1/health` (public, skipped by rate limiting)
-- OpenAPI UI: `/api/docs`
-- Future groups already mounted:
+- Auth: `POST /api/v1/admin/auth/login`, `POST /api/v1/admin/auth/logout`, `GET /api/v1/admin/auth/session`
+- OpenAPI UI: `/api/docs` (spec JSON: `/api/docs.json`)
+- Groups already mounted:
   - `/api/v1/public/*` — unauthenticated customer content
   - `/api/v1/customer/*` — JWT required
-  - `/api/v1/admin/*` — JWT + one of the admin roles required
+  - `/api/v1/admin/*` — JWT + one of the admin roles required (except `/admin/auth/login` and `/admin/auth/logout`)
 
 Domain routers stay inside `src/modules/<domain>/routes.js` and are mounted onto a surface when real endpoints exist.
 
@@ -76,4 +77,4 @@ Register a real implementation with `setStorageProvider` (and equivalents) from 
 
 ## Future features
 
-Business schema, CRUD, auth flows, CMS, checkout, and live vendor SDKs are **out of scope** for this foundation.
+Staff identity in PostgreSQL, register/refresh/password reset, catalog CRUD, CMS, checkout, and live vendor SDKs remain follow-up work.

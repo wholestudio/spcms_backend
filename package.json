@@ -22,17 +22,20 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:validate": "prisma validate"
+    "prisma:validate": "prisma validate",
+    "seed:admin": "node scripts/seed-super-admin.js"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
-    "bcryptjs": "^3.0.2",
+    "argon2": "^0.44.0",
+    "cloudinary": "^2.11.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.5.0",
     "pino": "^9.9.0",
     "pino-http": "^10.5.0",
     "swagger-jsdoc": "^6.2.8",
@@ -41,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
+    "@types/multer": "^2.3.0",
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^16.3.0",

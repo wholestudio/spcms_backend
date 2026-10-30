@@ -31,10 +31,10 @@ services:
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
-      PORT: 3000
+      PORT: 4000
       DATABASE_URL: postgresql://spcms:spcms@postgres:5432/spcms?schema=public
     ports:
-      - '3000:3000'
+      - '4000:4000'
     profiles:
       - full
 

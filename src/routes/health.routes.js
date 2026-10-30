@@ -15,7 +15,12 @@ import { sendSuccess } from '../common/responses/success.js';
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/HealthData'
  */
 const router = Router();
 

@@ -16,5 +16,5 @@ COPY package.json ./
 COPY prisma ./prisma
 COPY src ./src
 USER nodejs
-EXPOSE 3000
+EXPOSE 4000
 CMD ["node", "src/server.js"]

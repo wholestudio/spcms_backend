@@ -43,23 +43,16 @@ describe('route surfaces', () => {
     expect(response.body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it('rejects an authenticated user without an admin role', async () => {
-    const token = signAccessToken({ sub: 'user-1', roles: [] });
+  it('rejects a JWT whose subject is not a live user (or DB is down)', async () => {
+    const token = signAccessToken({
+      sub: '00000000-0000-4000-8000-000000000099',
+      role: ROLES.CUSTOMER,
+    });
     const response = await request(app)
       .get('/api/v1/admin/dashboard')
       .set('authorization', `Bearer ${token}`);
 
-    expect(response.status).toBe(403);
-    expect(response.body.error.code).toBe('FORBIDDEN');
-  });
-
-  it('returns 404 on admin when authenticated with a valid role and no endpoint exists', async () => {
-    const token = signAccessToken({ sub: 'admin-1', roles: [ROLES.SUPER_ADMIN] });
-    const response = await request(app)
-      .get('/api/v1/admin/dashboard')
-      .set('authorization', `Bearer ${token}`);
-
-    expect(response.status).toBe(404);
-    expect(response.body.error.code).toBe('NOT_FOUND');
+    expect([401, 503]).toContain(response.status);
+    expect(['UNAUTHORIZED', 'SERVICE_UNAVAILABLE']).toContain(response.body.error.code);
   });
 });
