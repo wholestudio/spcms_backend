@@ -1,16 +1,13 @@
 /**
  * Media domain.
  *
- * CURRENT: architectural boundary only.
- * FUTURE: upload, delete, metadata, alt text, ordering, thumbnails,
- *         multiple images, and entity relationships.
+ * Upload, list, metadata update, and delete for CMS images.
+ * Files are stored on Cloudinary and served via CDN.
+ * PostgreSQL stores metadata and Cloudinary public_id only — never binaries.
  *
- * Files are stored by the storage provider (Cloudinary / S3 / other) and
- * served via CDN. PostgreSQL stores metadata and object keys only.
- * Never commit business images to git or store binaries in the database.
- *
- * Flow: CMS → Backend → Storage Provider → CDN → Customer Website
+ * Flow: CMS → Backend → Cloudinary → CDN → Customer Website
  */
 
 export { default as routes } from './routes.js';
 export { MODULE_NAME } from './constants.js';
+export * as mediaService from './service.js';

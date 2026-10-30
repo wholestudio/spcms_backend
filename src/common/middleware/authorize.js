@@ -2,8 +2,7 @@ import { ForbiddenError, UnauthorizedError } from '../errors/app-error.js';
 
 /**
  * Route-level RBAC. Attach after `authenticate`.
- * Action-level and resource-level checks should call helpers from this module
- * rather than branching on roles inside controllers.
+ * Checks `req.user.role` (and legacy `req.user.roles` array if present).
  */
 export function authorize(...allowedRoles) {
   return (req, _res, next) => {
@@ -11,8 +10,11 @@ export function authorize(...allowedRoles) {
       throw new UnauthorizedError('Authentication required');
     }
 
-    const userRoles = Array.isArray(req.user.roles) ? req.user.roles : [];
-    const allowed = allowedRoles.some((role) => userRoles.includes(role));
+    const role = req.user.role;
+    const roles = Array.isArray(req.user.roles) ? req.user.roles : [];
+    const allowed =
+      (role && allowedRoles.includes(role)) ||
+      allowedRoles.some((allowedRole) => roles.includes(allowedRole));
 
     if (!allowed) {
       throw new ForbiddenError('Insufficient role to access this resource');
@@ -40,7 +42,13 @@ export function requirePermission(...requiredPermissions) {
 }
 
 export function hasRole(user, role) {
-  return Array.isArray(user?.roles) && user.roles.includes(role);
+  if (!user) {
+    return false;
+  }
+  if (user.role === role) {
+    return true;
+  }
+  return Array.isArray(user.roles) && user.roles.includes(role);
 }
 
 export function hasPermission(user, permission) {

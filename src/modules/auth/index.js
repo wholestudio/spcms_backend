@@ -1,10 +1,11 @@
 /**
- * Auth domain.
+ * Auth domain — register, verify, login, refresh, password flows.
  *
- * CURRENT: JWT sign/verify helpers live in common/utils/jwt.js.
- *          authenticate / authorize middleware live in common/middleware.
- * FUTURE: register, login, refresh, password reset — no flows in this foundation.
+ * Public routes: /api/v1/auth/*
+ * Staff login:   /api/v1/admin/auth/login
  */
 
 export { default as routes } from './routes.js';
+export { default as adminAuthRoutes } from './admin.routes.js';
 export { MODULE_NAME } from './constants.js';
+export * as authService from './service.js';

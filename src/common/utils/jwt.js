@@ -2,10 +2,19 @@ import jwt from 'jsonwebtoken';
 import { config } from '../../config/config.js';
 
 export function signAccessToken(payload, options = {}) {
-  return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
-    ...options,
-  });
+  const { sub, role, ...rest } = payload;
+  return jwt.sign(
+    {
+      sub,
+      role,
+      ...rest,
+    },
+    config.jwt.secret,
+    {
+      expiresIn: config.jwt.accessExpiresIn,
+      ...options,
+    },
+  );
 }
 
 export function verifyAccessToken(token) {

@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { config } from '../../config/config.js';
 import { TooManyRequestsError } from '../errors/app-error.js';
 
@@ -18,4 +18,9 @@ export function createRateLimiter(options = {}) {
     },
     ...options,
   });
+}
+
+/** Stable IP key (IPv6-safe) for custom key generators. */
+export function clientIpKey(req) {
+  return ipKeyGenerator(req);
 }

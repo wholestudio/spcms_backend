@@ -22,6 +22,12 @@ async function start() {
       },
       'Studio Patron API started',
     );
+
+    if (config.isProduction && config.auth.bootstrap) {
+      logger.warn(
+        'BOOTSTRAP_ADMIN_* is set in production. Replace it with a real staff identity store.',
+      );
+    }
   });
 }
 
